@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>doXQ Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chat-box::-webkit-scrollbar { width: 8px; }
+        .chat-box::-webkit-scrollbar-track { background: #111827; }
+        .chat-box::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .chat-box::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background-color: #111827; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-300 flex justify-center">
+
+    <div class="w-full max-w-3xl h-full flex flex-col">
+        <header class="p-4 flex items-center justify-between z-10 sticky top-0 bg-gray-900/80 backdrop-blur-md border-b border-gray-800">
+            <div class="flex items-center space-x-3">
+                 <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z"></path></svg>
+                 <h1 class="text-xl font-semibold text-white">doXQ</h1>
+            </div>
+        </header>
+
+        <main id="chat-box" class="flex-1 p-6 overflow-y-auto chat-box">
+            <!-- Messages will be appended here -->
+        </main>
+
+        <div id="typing-indicator" class="p-6 pt-0 hidden">
+             <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z"></path></svg>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-3 mt-4">
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="p-4 sticky bottom-0 bg-gray-900">
+            <form id="chat-form" class="relative">
+                <textarea id="user-input" placeholder="Ask anything about the PDF..." autocomplete="off" class="w-full p-4 pr-12 bg-gray-800 text-white border border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" rows="1"></textarea>
+                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors disabled:opacity-50">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                </button>
+            </form>
+             <p class="text-center text-xs text-gray-600 mt-2">doXQ can make mistakes. Check important info.</p>
+        </footer>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const submitButton = chatForm.querySelector('button');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        function addMessage(message, sender) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('mb-6');
+            let messageContent;
+            if (sender === 'user') {
+                messageContent = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center flex-shrink-0 font-bold">Y</div>
+                        <div>
+                            <p class="font-bold text-white">You</p>
+                            <p class="text-gray-300 whitespace-pre-wrap">${message}</p>
+                        </div>
+                    </div>`;
+            } else {
+                messageContent = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center flex-shrink-0">
+                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white">doXQ</p>
+                            <p class="text-gray-300 whitespace-pre-wrap">${message}</p>
+                        </div>
+                    </div>`;
+            }
+            messageWrapper.innerHTML = messageContent;
+            chatBox.appendChild(messageWrapper);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator(show) {
+            typingIndicator.style.display = show ? 'block' : 'none';
+            if(show) scrollToBottom();
+        }
+
+        async function getBotResponse(userMessage) {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMessage })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.reply;
+        }
+        
+        function autoResizeTextarea() {
+            userInput.style.height = 'auto';
+            userInput.style.height = (userInput.scrollHeight) + 'px';
+        }
+        
+        userInput.addEventListener('input', autoResizeTextarea);
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, 'user');
+                userInput.value = '';
+                autoResizeTextarea();
+                showTypingIndicator(true);
+                submitButton.disabled = true;
+                try {
+                    const botResponse = await getBotResponse(message);
+                    addMessage(botResponse, 'bot');
+                } catch (error) {
+                    console.error("Error getting bot response:", error);
+                    addMessage("Sorry, something went wrong with the connection.", 'bot');
+                } finally {
+                    showTypingIndicator(false);
+                    submitButton.disabled = false;
+                    userInput.focus();
+                }
+            }
+        });
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        window.addEventListener('load', () => {
+             addMessage("PDF processed. I'm ready to answer your questions!", 'bot');
+             userInput.focus();
+        });
+    </script>
+</body>
+</html>
