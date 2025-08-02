@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-700">
+        <h1 class="text-3xl font-bold text-white mb-6 text-center">Upload PDF to Chat</h1>
+        
+        <form id="upload-form">
+            <div class="relative w-full">
+                <input 
+                    type="file" 
+                    id="pdf-upload" 
+                    name="file"
+                    accept=".pdf" 
+                    class="absolute inset-0 opacity-0 cursor-pointer"
+                    required
+                >
+                <label 
+                    for="pdf-upload" 
+                    class="w-full flex items-center justify-center py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl cursor-pointer transition-colors duration-200"
+                >
+                    Choose PDF File
+                </label>
+            </div>
+            
+            <div class="mt-4 p-4 bg-gray-700 rounded-xl border border-gray-600 text-gray-300 text-center text-sm break-words">
+                <span id="file-name">No file chosen</span>
+            </div>
+
+            <button 
+                type="submit" 
+                id="submit-button"
+                class="mt-6 w-full flex items-center justify-center py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors duration-200 disabled:bg-gray-500 disabled:cursor-wait"
+            >
+                Upload & Start Chat
+            </button>
+        </form>
+
+        <div id="upload-status" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const fileInput = document.getElementById('pdf-upload');
+        const fileNameDisplay = document.getElementById('file-name');
+        const statusDisplay = document.getElementById('upload-status');
+        const submitButton = document.getElementById('submit-button');
+
+        fileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                fileNameDisplay.textContent = event.target.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'No file chosen';
+            }
+        });
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const file = fileInput.files[0];
+            if (!file) {
+                statusDisplay.textContent = 'Please select a PDF file first.';
+                statusDisplay.className = 'mt-4 text-center text-red-500';
+                return;
+            }
+
+            statusDisplay.textContent = 'Uploading...';
+            statusDisplay.className = 'mt-4 text-center text-yellow-500';
+            submitButton.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload-pdf', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    statusDisplay.textContent = 'Success! Redirecting to chat...';
+                    statusDisplay.className = 'mt-4 text-center text-green-500';
+                    // On successful upload, redirect to the chat page.
+                    window.location.href = '/chat';
+                } else {
+                    const error = await response.json();
+                    statusDisplay.textContent = error.detail || 'Failed to upload file.';
+                    statusDisplay.className = 'mt-4 text-center text-red-500';
+                    submitButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDisplay.textContent = 'An error occurred during upload.';
+                statusDisplay.className = 'mt-4 text-center text-red-500';
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
