@@ -1,0 +1,7 @@
+.venv
+.vscode
+test_docs2
+
+.env
+
+parsed_md.txt
